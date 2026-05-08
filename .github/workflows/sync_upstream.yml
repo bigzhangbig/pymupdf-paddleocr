@@ -52,7 +52,7 @@ jobs:
             echo "- Upstream: \`pymupdf/PyMuPDF\`"
             echo "- Commits in the last 30 days: \`${{ steps.frequency.outputs.commits_30d }}\`"
             echo "- Current sync schedule: \`every 12 hours\`"
-            echo "- Frequency recommendation: \`${{ steps.frequency.outputs.recommendation }}\`"
+            echo "- Recommended interval: \`${{ steps.frequency.outputs.recommendation }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   sync-upstream:
@@ -76,10 +76,10 @@ jobs:
           git checkout main
 
           if ! git merge --ff-only upstream/main; then
-            echo "Fast-forward merge is not possible (local and upstream histories diverged)."
-            echo "Proceeding with a regular merge commit; review merge result for any unexpected changes."
+            echo "::error::Fast-forward sync failed because local main and upstream/main have diverged."
+            echo "::error::Please resolve manually (e.g. merge/rebase in a PR) and then re-run this workflow."
             echo "Local main: $(git rev-parse --short HEAD)"
             echo "Upstream main: $(git rev-parse --short upstream/main)"
-            git merge --no-edit upstream/main
+            exit 1
           fi
           git push origin main
