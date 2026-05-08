@@ -28,11 +28,11 @@ jobs:
           commits_30d="$(git rev-list --count --since='30 days ago' upstream/main)"
 
           if [ "$commits_30d" -ge 20 ]; then
-            recommendation='建议每 12 小时同步一次'
+            recommendation='Recommended sync interval: every 12 hours'
           elif [ "$commits_30d" -ge 8 ]; then
-            recommendation='建议每天同步一次'
+            recommendation='Recommended sync interval: daily'
           else
-            recommendation='建议每周同步一次'
+            recommendation='Recommended sync interval: weekly'
           fi
 
           echo "commits_30d=$commits_30d" >> "$GITHUB_OUTPUT"
@@ -45,9 +45,9 @@ jobs:
             echo "### Upstream Update Frequency"
             echo ""
             echo "- Upstream: \`pymupdf/PyMuPDF\`"
-            echo "- 最近 30 天提交数: \`${{ steps.frequency.outputs.commits_30d }}\`"
-            echo "- 当前同步计划: \`每 12 小时\`"
-            echo "- 频率建议: \`${{ steps.frequency.outputs.recommendation }}\`"
+            echo "- Commits in the last 30 days: \`${{ steps.frequency.outputs.commits_30d }}\`"
+            echo "- Current sync schedule: \`every 12 hours\`"
+            echo "- Frequency recommendation: \`${{ steps.frequency.outputs.recommendation }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   sync-upstream:
@@ -70,5 +70,8 @@ jobs:
           git fetch upstream main
           git checkout main
 
-          git merge --ff-only upstream/main || git merge --no-edit upstream/main
+          if ! git merge --ff-only upstream/main; then
+            echo "Fast-forward merge is not possible; falling back to a regular merge commit."
+            git merge --no-edit upstream/main
+          fi
           git push origin main
