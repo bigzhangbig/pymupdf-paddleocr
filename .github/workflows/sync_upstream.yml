@@ -33,11 +33,11 @@ jobs:
           # - >=8 commits/30d   -> medium activity, sync daily
           # - <8 commits/30d    -> low activity, sync weekly
           if [ "$commits_30d" -ge "$high_activity_threshold" ]; then
-            recommendation='Recommended sync interval: every 12 hours'
+            recommendation='every 12 hours'
           elif [ "$commits_30d" -ge "$medium_activity_threshold" ]; then
-            recommendation='Recommended sync interval: daily'
+            recommendation='daily'
           else
-            recommendation='Recommended sync interval: weekly'
+            recommendation='weekly'
           fi
 
           echo "commits_30d=$commits_30d" >> "$GITHUB_OUTPUT"
@@ -78,8 +78,8 @@ jobs:
           if ! git merge --ff-only upstream/main; then
             echo "::error::Fast-forward sync failed because local main and upstream/main have diverged."
             echo "::error::Please resolve manually (e.g. merge/rebase in a PR) and then re-run this workflow."
-            echo "Local main: $(git rev-parse --short HEAD)"
-            echo "Upstream main: $(git rev-parse --short upstream/main)"
+            echo "::notice::Local main: $(git rev-parse --short HEAD)"
+            echo "::notice::Upstream main: $(git rev-parse --short upstream/main)"
             exit 1
           fi
           git push origin main
