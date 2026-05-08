@@ -31,7 +31,7 @@ jobs:
           medium_activity_threshold=8
           # Threshold rationale:
           # - Observed baseline: ~30 commits in the last 30 days for upstream.
-          # - >=20 commits/30d  -> high activity, sync every 12h
+          # - >=20 commits/30d  -> sustained high activity, sync every 12h
           # - >=8 commits/30d   -> medium activity, sync daily
           # - <8 commits/30d    -> low activity, sync weekly
           if [ "$commits_30d" -ge "$high_activity_threshold" ]; then
@@ -79,7 +79,7 @@ jobs:
 
           if ! git merge --ff-only upstream/main; then
             echo "::error::Fast-forward sync failed because local main and upstream/main have diverged."
-            echo "::error::Please resolve manually (e.g. merge/rebase in a PR) and then re-run this workflow."
+            echo "::error::Please resolve manually (for example via a PR) and ensure main is aligned with upstream before next scheduled run."
             echo "::notice::Merge base: $(git merge-base HEAD upstream/main | cut -c1-7)"
             echo "::notice::Local main: $(git rev-parse --short HEAD)"
             echo "::notice::Upstream main: $(git rev-parse --short upstream/main)"
