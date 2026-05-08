@@ -23,7 +23,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git remote add upstream https://github.com/pymupdf/PyMuPDF.git || true
+          git remote set-url upstream https://github.com/pymupdf/PyMuPDF.git || git remote add upstream https://github.com/pymupdf/PyMuPDF.git
           git fetch upstream main
 
           commits_last_30_days="$(git rev-list --count --since='30 days ago' upstream/main)"
@@ -71,20 +71,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git remote add upstream https://github.com/pymupdf/PyMuPDF.git || true
+          git remote set-url upstream https://github.com/pymupdf/PyMuPDF.git || git remote add upstream https://github.com/pymupdf/PyMuPDF.git
           git fetch upstream main
           git checkout main
 
           if ! git merge --ff-only upstream/main; then
             echo "::error::Fast-forward sync failed because local main and upstream/main have diverged."
             echo "::error::Resolve divergence manually: create a PR to merge upstream/main into main if local commits must be kept, or align main to upstream/main if local commits should be dropped."
+            ahead_behind="$(git rev-list --left-right --count HEAD...upstream/main)"
+            local_ahead="$(echo "$ahead_behind" | awk '{print $1}')"
+            upstream_ahead="$(echo "$ahead_behind" | awk '{print $2}')"
             echo "::notice::Merge base: $(git merge-base HEAD upstream/main | cut -c1-7)"
             echo "::notice::Local main: $(git rev-parse --short HEAD)"
             echo "::notice::Upstream main: $(git rev-parse --short upstream/main)"
-            echo "::notice::Commits ahead/behind (local...upstream): $(git rev-list --left-right --count HEAD...upstream/main)"
+            echo "::notice::Divergence summary: local is ${local_ahead} commit(s) ahead, upstream is ${upstream_ahead} commit(s) ahead."
             exit 1
           fi
           git push origin main
