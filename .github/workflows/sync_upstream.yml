@@ -26,10 +26,15 @@ jobs:
           git fetch upstream main
 
           commits_30d="$(git rev-list --count --since='30 days ago' upstream/main)"
-
-          if [ "$commits_30d" -ge 20 ]; then
+          high_activity_threshold=20
+          medium_activity_threshold=8
+          # Threshold rationale:
+          # - >=20 commits/30d  -> high activity, sync every 12h
+          # - >=8 commits/30d   -> medium activity, sync daily
+          # - <8 commits/30d    -> low activity, sync weekly
+          if [ "$commits_30d" -ge "$high_activity_threshold" ]; then
             recommendation='Recommended sync interval: every 12 hours'
-          elif [ "$commits_30d" -ge 8 ]; then
+          elif [ "$commits_30d" -ge "$medium_activity_threshold" ]; then
             recommendation='Recommended sync interval: daily'
           else
             recommendation='Recommended sync interval: weekly'
@@ -71,7 +76,10 @@ jobs:
           git checkout main
 
           if ! git merge --ff-only upstream/main; then
-            echo "Fast-forward merge is not possible; falling back to a regular merge commit."
+            echo "Fast-forward merge is not possible (local and upstream histories diverged)."
+            echo "Proceeding with a regular merge commit; review merge result for any unexpected changes."
+            echo "Local main: $(git rev-parse --short HEAD)"
+            echo "Upstream main: $(git rev-parse --short upstream/main)"
             git merge --no-edit upstream/main
           fi
           git push origin main
